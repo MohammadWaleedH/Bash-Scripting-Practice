@@ -1,0 +1,22 @@
+#!/bin/bash
+
+TARGET=$1                                        #Stores the IP address you type when running the script.
+OUTPUT="scan_results.txt"                              #stores the filename where results will be saved.
+
+echo "[*] Starting scan on $TARGET"                                    #echo prints a message to the screen
+echo "=============================" > $OUTPUT                 #symbol creates the results file (or wipes it clean if it already exists) and adds a header to it.
+
+echo "[+] Checking if host is alive..."                                    #Sends one ping to the target to see if it responds
+ping -c 1 $TARGET > /dev/null                                  #/dev/null throws away the ping output 
+
+if [ $? -eq 0 ]; then                                                 #$? checks the exit status of the last command (ping). If it is 0, it means the ping was successful and the host is up. If it is not 0, it means the ping failed and the host is down.
+    echo "[+] Host is UP" | tee -a $OUTPUT                            #echoes that the host is up and appends it to the results file using tee -a
+else
+    echo "[-] Host is DOWN" | tee -a $OUTPUT                               #echoes that the host is down and appends it to the results file using tee -a
+    exit 1                                               #
+fi
+
+echo "[+] Running Nmap scan..."
+nmap -sS -sV $TARGET -oN $OUTPUT                 #nmap runs a SYN scan (-sS) to check for open ports and a version detection scan (-sV) to identify services running on those ports. The results are saved in normal format (-oN) to the specified output file.
+
+echo "[+] Scan completed. Results saved in $OUTPUT"  #echoes that the scan is complete and indicates where the results are saved.
